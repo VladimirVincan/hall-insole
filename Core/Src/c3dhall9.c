@@ -64,6 +64,12 @@ void c3dhall9_write_register(I2C_HandleTypeDef hi2c1, const uint8_t i2c_addr, co
 	}
 }
 
+void c3dhall9_read_data(I2C_HandleTypeDef hi2c1)
+{
+	c3dhall9_read_register(hi2c1, C3DHALL9_I2C_DEFAULT_ADDR, C3DHALL9_REGISTER_MSB_ADDR, &C3DHALL9_REGISTER_MSB);
+    c3dhall9_read_register(hi2c1, C3DHALL9_I2C_DEFAULT_ADDR, C3DHALL9_REGISTER_LSB_ADDR, &C3DHALL9_REGISTER_LSB);
+}
+
 void c3dhall9_init(I2C_HandleTypeDef hi2c1, const uint8_t i2c_addr)
 {
 	c3dhall9_write_register(hi2c1, i2c_addr, C3DHALL9_REG_EEPROM_02,

@@ -82,6 +82,7 @@ extern uint32_t C3DHALL9_REGISTER_TEST;
 
 void c3dhall9_read_register(I2C_HandleTypeDef hi2c1, const uint8_t i2c_addr, const uint8_t reg_addr, uint32_t *reg);
 void c3dhall9_write_register(I2C_HandleTypeDef hi2c1, const uint8_t i2c_addr, const uint8_t reg_addr, const uint32_t reg);
+void c3dhall9_read_data(I2C_HandleTypeDef hi2c1);
 void c3dhall9_init(I2C_HandleTypeDef hi2c1, const uint8_t i2c_addr);
 float c3dhall9_get_x();
 float c3dhall9_get_y();

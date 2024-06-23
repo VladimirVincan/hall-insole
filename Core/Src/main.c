@@ -110,28 +110,10 @@ int main(void)
   c3dhall9_init(hi2c1, C3DHALL9_I2C_DEFAULT_ADDR);
   while (1)
   {
-	   c3dhall9_read_register(hi2c1, C3DHALL9_I2C_DEFAULT_ADDR, C3DHALL9_REGISTER_MSB_ADDR, &C3DHALL9_REGISTER_MSB);
-	   c3dhall9_read_register(hi2c1, C3DHALL9_I2C_DEFAULT_ADDR, C3DHALL9_REGISTER_LSB_ADDR, &C3DHALL9_REGISTER_LSB);
-	   c3dhall9_read_register(hi2c1, C3DHALL9_I2C_DEFAULT_ADDR, C3DHALL9_REG_EEPROM_02, &C3DHALL9_REGISTER_TEST);
-
+	   c3dhall9_read_data(hi2c1);
 	   sprintf(buf, "x : %.1f\ny : %.1f\nz : %.1f\ntemp : %.1f\n", c3dhall9_get_x(), c3dhall9_get_y(), c3dhall9_get_z(), c3dhall9_get_temp());
-	   // sprintf(buf, "%.1f\n", c3dhall9_get_temp());
 	   HAL_UART_Transmit(&huart2, buf, strlen((char*)buf), HAL_MAX_DELAY);
-	   // HAL_UART_Transmit(&huart2, &C3DHALL9_REGISTER_MSB, 4, HAL_MAX_DELAY);
-//
-//	   sprintf(buf, "%x_\r\n", C3DHALL9_REGISTER_MSB);
-//	   HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
-//
-//	   sprintf(buf, "%x_\r\n", C3DHALL9_REGISTER_LSB);
-//	   HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
-//
-//	   sprintf(buf, "%x_\r\n", C3DHALL9_REGISTER_TEST);
-//	   HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
-
 	   HAL_Delay(1000);
-
-       // C3DHALL9_REG_EEPROM_02
-	   // C3DHALL9_REG_VOLATILE_28
 
 	   /*c3dhall9_read_register(hi2c1, C3DHALL9_I2C_DEFAULT_ADDR, C3DHALL9_REG_EEPROM_02, &C3DHALL9_REGISTER_TEST);
 	   sprintf(buf, "%x_\r\n", C3DHALL9_REGISTER_TEST);
