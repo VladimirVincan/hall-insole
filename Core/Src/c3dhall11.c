@@ -4,27 +4,28 @@
  *  Created on: Jun 23, 2024
  *      Author: bici
  */
+#include "c3dhall11.h"
 
-
-err_t c3dhall11_default_cfg ( c3dhall11_t *ctx )
+void c3dhall11_init(const uint8_t i2c_addr)
 {
-    err_t error_flag = C3DHALL11_OK;
-    if ( C3DHALL11_ERROR == c3dhall11_check_communication ( ctx ) )
-    {
-        return C3DHALL11_ERROR;
-    }
-    error_flag |= c3dhall11_write_register ( ctx, C3DHALL11_REG_DEVICE_CONFIG_1, C3DHALL11_CONV_AVG_32X |
-                                                                                 C3DHALL11_I2C_RD_STANDARD );
-    error_flag |= c3dhall11_write_register ( ctx, C3DHALL11_REG_SENSOR_CONFIG_1, C3DHALL11_MAG_CH_EN_ENABLE_XYZ );
-    error_flag |= c3dhall11_write_register ( ctx, C3DHALL11_REG_SENSOR_CONFIG_2, C3DHALL11_ANGLE_EN_XY_ANGLE |
-                                                                                 C3DHALL11_X_Y_RANGE_40mT |
-                                                                                 C3DHALL11_Z_RANGE_40mT );
-    error_flag |= c3dhall11_write_register ( ctx, C3DHALL11_REG_T_CONFIG, C3DHALL11_T_CH_EN_ENABLE );
-    error_flag |= c3dhall11_write_register ( ctx, C3DHALL11_REG_INT_CONFIG_1, C3DHALL11_MASK_INTB_DISABLE );
-    error_flag |= c3dhall11_write_register ( ctx, C3DHALL11_REG_DEVICE_CONFIG_2, C3DHALL11_OPERATING_MODE_CONTINUOUS );
-    return error_flag;
+	write_register(i2c_addr, C3DHALL11_REG_DEVICE_CONFIG_1,
+			C3DHALL11_CONV_AVG_32X |
+			C3DHALL11_I2C_RD_STANDARD);
+	write_register(i2c_addr, C3DHALL11_REG_SENSOR_CONFIG_1,
+			C3DHALL11_MAG_CH_EN_ENABLE_XYZ);
+	write_register(i2c_addr, C3DHALL11_REG_SENSOR_CONFIG_2,
+			C3DHALL11_ANGLE_EN_XY_ANGLE |
+			C3DHALL11_X_Y_RANGE_40mT |
+			C3DHALL11_Z_RANGE_40mT);
+	write_register(i2c_addr, C3DHALL11_REG_T_CONFIG,
+			C3DHALL11_T_CH_EN_ENABLE);
+	write_register(i2c_addr, C3DHALL11_REG_INT_CONFIG_1,
+			C3DHALL11_MASK_INTB_DISABLE);
+	write_register(i2c_addr, C3DHALL11_REG_DEVICE_CONFIG_2,
+			C3DHALL11_OPERATING_MODE_CONTINUOUS);
 }
 
+/*
 err_t c3dhall11_read_data ( c3dhall11_t *ctx, c3dhall11_data_t *data_out )
 {
     uint8_t data_buf[ 12 ] = { 0 };
@@ -73,4 +74,4 @@ err_t c3dhall11_read_data ( c3dhall11_t *ctx, c3dhall11_data_t *data_out )
         return error_flag;
     }
     return C3DHALL11_ERROR;
-}
+}*/

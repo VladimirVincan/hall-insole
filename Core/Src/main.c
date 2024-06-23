@@ -22,6 +22,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <string.h>
+#include <stdio.h>
+#include "c3dhall9.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -32,59 +34,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-/**
- * @brief 3D Hall 9 Register Map.
- * @details Specified register map of 3D Hall 9 Click driver.
- */
-#define C3DHALL9_REG_EEPROM_02                  0x02
-#define C3DHALL9_REG_EEPROM_03                  0x03
-#define C3DHALL9_REG_EEPROM_0D                  0x0D
-#define C3DHALL9_REG_EEPROM_0E                  0x0E
-#define C3DHALL9_REG_EEPROM_0F                  0x0F
-#define C3DHALL9_REG_VOLATILE_27                0x27
-#define C3DHALL9_REG_VOLATILE_28                0x28
-#define C3DHALL9_REG_VOLATILE_29                0x29
-#define C3DHALL9_REG_CUSTOMER_ACCESS            0x35
 
-/**
- * @brief 3D Hall 9 register setting.
- * @details Specified setting for registers of 3D Hall 9 Click driver.
- */
-#define C3DHALL9_EEPROM_02_I2C_THRESHOLD_18V    0x00000200ul
-#define C3DHALL9_EEPROM_02_DISABLE_SLAVE_ADC    0x00020000ul
-#define C3DHALL9_EEPROM_02_ENABLE_Z             0x00000100ul
-#define C3DHALL9_EEPROM_02_ENABLE_Y             0x00000080ul
-#define C3DHALL9_EEPROM_02_ENABLE_X             0x00000040ul
-#define C3DHALL9_VOLATILE_27_ACTIVE_MODE        0x00000000ul
-#define C3DHALL9_VOLATILE_27_SLEEP_MODE         0x00000001ul
-#define C3DHALL9_VOLATILE_27_LOW_POWER_MODE     0x00000002ul
-#define C3DHALL9_VOLATILE_27_I2C_SINGLE         0x00000000ul
-#define C3DHALL9_VOLATILE_27_I2C_FAST_LOOP      0x00000004ul
-#define C3DHALL9_VOLATILE_27_I2C_FULL_LOOP      0x00000008ul
-#define C3DHALL9_REG_CUSTOMER_ACCESS_CODE       0x2C413534ul
-
-#define C3DHALL9_EEPROM_02_I2C_ADDR_MIN         0x00000400ul
-#define C3DHALL9_EEPROM_02_I2C_ADDR_MAX         0x0001FC00ul
-
-/**
- * @brief 3D Hall 9 measurements values.
- * @details Specified values for measurements of 3D Hall 9 Click driver.
- */
-#define C3DHALL9_12BIT_RESOLUTION               0x1000
-#define C3DHALL9_SIGN_BIT                       0x0800
-#define C3DHALL9_DATA_READY_BIT                 0x0080
-#define C3DHALL9_GAUSS_RESOLUTION               4.0
-#define C3DHALL9_TEMPERATURE_MULTIPLIER         302
-#define C3DHALL9_TEMPERATURE_SUBTRACTOR         1708
-#define C3DHALL9_HALF_CICRLE_DEGREES            180.0
-#define C3DHALL9_MATH_TWO_PI                    6.28318530717958
-
-/**
- * @brief 3D Hall 9 device address setting.
- * @details Specified setting for device slave address selection of
- * 3D Hall 9 Click driver.
- */
-#define C3DHALL9_SET_DEV_ADDR                   0x60
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -100,18 +50,6 @@ DMA_HandleTypeDef hdma_i2c1_rx;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-static const uint8_t I2C_DEFAULT_ADDR = 0x60;
-static const uint8_t I2C_DEFAULT_RD_ADDR = 0xc1;
-static const uint8_t I2C_DEFAULT_WR_ADDR = 0xc0;
-
-static const uint8_t REGISTER_MSB_ADDR = 0x28;
-static uint32_t REGISTER_MSB = 0x00;
-
-static const uint8_t REGISTER_LSB_ADDR = 0x29;
-static uint32_t REGISTER_LSB = 0x00;
-
-static const uint8_t REGISTER_TEST_ADDR = 0x02;
-static uint32_t REGISTER_TEST = 0x00;
 
 /* USER CODE END PV */
 
@@ -123,124 +61,11 @@ static void MX_USART2_UART_Init(void);
 static void MX_I2C1_Init(void);
 /* USER CODE BEGIN PFP */
 
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
-void read_register(const uint8_t i2c_addr, const uint8_t reg_addr, uint32_t *reg)
-{
-	uint8_t buf[4];
-	uint8_t transmit[32];
-	HAL_StatusTypeDef ret;
-
-	const uint8_t i2c_rd_addr = (i2c_addr << 1) | 0x1;
-	const uint8_t i2c_wr_addr = (i2c_addr << 1) | 0x0;
-
-	buf[0] = reg_addr;
-	ret = HAL_I2C_Master_Transmit(&hi2c1, i2c_wr_addr, buf, 1, HAL_MAX_DELAY);
-	HAL_Delay(100);
-	if (ret != HAL_OK) {
-		strcpy((char*)transmit, "TxEr\r\n");
-		HAL_UART_Transmit(&huart2, transmit, strlen((char*)transmit), HAL_MAX_DELAY);
-	}
-	else {
-		ret = HAL_I2C_Master_Receive(&hi2c1, i2c_rd_addr, buf, 4, HAL_MAX_DELAY);
-		HAL_Delay(100);
-		if (ret != HAL_OK) {
-			strcpy((char*)transmit, "RxEr\r\n");
-			HAL_UART_Transmit(&huart2, transmit, strlen((char*)transmit), HAL_MAX_DELAY);
-		}
-	}
-
-	/*sprintf(transmit, "%x_[i2c_wr]\r\n", I2C_DEFAULT_WR_ADDR);
-	HAL_UART_Transmit(&huart2, transmit, strlen((char*)transmit), HAL_MAX_DELAY);
-	sprintf(transmit, "%x_[i2c_rd]\r\n", I2C_DEFAULT_RD_ADDR);
-	HAL_UART_Transmit(&huart2, transmit, strlen((char*)transmit), HAL_MAX_DELAY);
-	sprintf(transmit, "%x_[reg_addr]\r\n", reg_addr);
-	HAL_UART_Transmit(&huart2, transmit, strlen((char*)transmit), HAL_MAX_DELAY);
-	sprintf(transmit, "%x_[3]\r\n", buf[3]);
-	HAL_UART_Transmit(&huart2, transmit, strlen((char*)transmit), HAL_MAX_DELAY);
-	sprintf(transmit, "%x_[2]\r\n", buf[2]);
-	HAL_UART_Transmit(&huart2, transmit, strlen((char*)transmit), HAL_MAX_DELAY);
-	sprintf(transmit, "%x_[1]\r\n", buf[1]);
-	HAL_UART_Transmit(&huart2, transmit, strlen((char*)transmit), HAL_MAX_DELAY);
-	sprintf(transmit, "%x_[0]\r\n", buf[0]);
-	HAL_UART_Transmit(&huart2, transmit, strlen((char*)transmit), HAL_MAX_DELAY);*/
-
-
-	// bug is here!!! 0 1 2 3
-	(*reg) = buf[0];
-	(*reg) <<= 8;
-	(*reg) |= buf[1];
-	(*reg) <<= 8;
-	(*reg) |= buf[2];
-	(*reg) <<= 8;
-	(*reg) |= buf[3];
-}
-
-void write_register(const uint8_t i2c_addr, const uint8_t reg_addr, const uint32_t reg)
-{
-	HAL_StatusTypeDef ret;
-	uint8_t buf[5];
-	uint8_t transmit[32];
-
-	const uint8_t i2c_wr_addr = (i2c_addr << 1) | 0x0;
-
-	buf[0] = reg_addr;
-	buf[1] = (uint8_t)((reg >> 24) & 0xFF);
-	buf[2] = (uint8_t)((reg >> 16) & 0xFF);
-	buf[3] = (uint8_t)((reg >> 8) & 0xFF);
-	buf[4] = (uint8_t)(reg & 0xFF);
-
-	ret = HAL_I2C_Master_Transmit(&hi2c1, i2c_wr_addr, buf, 5, HAL_MAX_DELAY);
-	if (ret != HAL_OK) {
-		strcpy((char*)transmit, "WrEr\r\n");
-	}
-}
-
-void init_sensor(const uint8_t i2c_addr)
-{
-	write_register(i2c_addr, C3DHALL9_REG_EEPROM_02,
-			C3DHALL9_EEPROM_02_ENABLE_X |
-			C3DHALL9_EEPROM_02_ENABLE_Y |
-			C3DHALL9_EEPROM_02_ENABLE_Z |
-			C3DHALL9_EEPROM_02_I2C_THRESHOLD_18V |
-			C3DHALL9_EEPROM_02_DISABLE_SLAVE_ADC |
-			C3DHALL9_EEPROM_02_I2C_ADDR_MIN);
-	write_register(i2c_addr, C3DHALL9_REG_CUSTOMER_ACCESS, C3DHALL9_REG_CUSTOMER_ACCESS_CODE);
-}
-
-float get_x()
-{
-	int16_t val = ((REGISTER_MSB >> 20) & 0x0FF0) | ((REGISTER_LSB >> 16) & 0x0F);
-	val = (val ^ C3DHALL9_SIGN_BIT) - C3DHALL9_SIGN_BIT;
-	float ret = (float)val / C3DHALL9_GAUSS_RESOLUTION;
-	return ret;
-}
-
-float get_y()
-{
-	int16_t val = ((REGISTER_MSB >> 12) & 0x0FF0) | ((REGISTER_LSB >> 12) & 0x0F);
-	val = (val ^ C3DHALL9_SIGN_BIT) - C3DHALL9_SIGN_BIT;
-	float ret = (float)val / C3DHALL9_GAUSS_RESOLUTION;
-	return ret;
-}
-
-float get_z()
-{
-	int16_t val = ((REGISTER_MSB >> 4) & 0x0FF0) | ((REGISTER_LSB >> 8) & 0x0F);
-	val = (val ^ C3DHALL9_SIGN_BIT) - C3DHALL9_SIGN_BIT;
-	float ret = (float)val / C3DHALL9_GAUSS_RESOLUTION;
-	return ret;
-}
-
-float get_temp()
-{
-	int32_t val = ((REGISTER_MSB & 0x0000003F) << 6) | (REGISTER_LSB & 0x0000003F);
-	float ret = C3DHALL9_TEMPERATURE_MULTIPLIER*((float)val - C3DHALL9_TEMPERATURE_SUBTRACTOR)/C3DHALL9_12BIT_RESOLUTION;
-	return ret;
-}
 
 /* USER CODE END 0 */
 
@@ -282,22 +107,36 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   char buf[32];
-  init_sensor(I2C_DEFAULT_ADDR);
+  c3dhall9_init(hi2c1, C3DHALL9_I2C_DEFAULT_ADDR);
   while (1)
   {
-//	   read_register(I2C_DEFAULT_ADDR, REGISTER_MSB_ADDR, &REGISTER_MSB);
-//	   read_register(I2C_DEFAULT_ADDR, REGISTER_LSB_ADDR, &REGISTER_LSB);
+	   c3dhall9_read_register(hi2c1, C3DHALL9_I2C_DEFAULT_ADDR, C3DHALL9_REGISTER_MSB_ADDR, &C3DHALL9_REGISTER_MSB);
+	   c3dhall9_read_register(hi2c1, C3DHALL9_I2C_DEFAULT_ADDR, C3DHALL9_REGISTER_LSB_ADDR, &C3DHALL9_REGISTER_LSB);
+	   c3dhall9_read_register(hi2c1, C3DHALL9_I2C_DEFAULT_ADDR, C3DHALL9_REG_EEPROM_02, &C3DHALL9_REGISTER_TEST);
+
+	   sprintf(buf, "x : %.1f\ny : %.1f\nz : %.1f\ntemp : %.1f\n", c3dhall9_get_x(), c3dhall9_get_y(), c3dhall9_get_z(), c3dhall9_get_temp());
+	   // sprintf(buf, "%.1f\n", c3dhall9_get_temp());
+	   HAL_UART_Transmit(&huart2, buf, strlen((char*)buf), HAL_MAX_DELAY);
+	   // HAL_UART_Transmit(&huart2, &C3DHALL9_REGISTER_MSB, 4, HAL_MAX_DELAY);
 //
-//	   sprintf(buf, "x : %.1f\ny : %.1f\nz : %.1f\ntemp : %.1f\n", get_x(), get_y(), get_z(), get_temp());
-//	   HAL_UART_Transmit(&huart2, buf, strlen((char*)buf), HAL_MAX_DELAY);
-//	   HAL_UART_Transmit(&huart2, &REGISTER_MSB, 4, HAL_MAX_DELAY);
+//	   sprintf(buf, "%x_\r\n", C3DHALL9_REGISTER_MSB);
+//	   HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
+//
+//	   sprintf(buf, "%x_\r\n", C3DHALL9_REGISTER_LSB);
+//	   HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
+//
+//	   sprintf(buf, "%x_\r\n", C3DHALL9_REGISTER_TEST);
+//	   HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
+
+	   HAL_Delay(1000);
 
        // C3DHALL9_REG_EEPROM_02
 	   // C3DHALL9_REG_VOLATILE_28
-	   read_register(I2C_DEFAULT_ADDR, C3DHALL9_REG_EEPROM_02, &REGISTER_TEST);
-	   sprintf(buf, "%x_\r\n", REGISTER_TEST);
+
+	   /*c3dhall9_read_register(hi2c1, C3DHALL9_I2C_DEFAULT_ADDR, C3DHALL9_REG_EEPROM_02, &C3DHALL9_REGISTER_TEST);
+	   sprintf(buf, "%x_\r\n", C3DHALL9_REGISTER_TEST);
 	   HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
-	   HAL_Delay(1000);
+	   HAL_Delay(1000);*/
 
 
     /* USER CODE END WHILE */

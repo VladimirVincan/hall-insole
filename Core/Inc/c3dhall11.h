@@ -8,6 +8,9 @@
 #ifndef INC_C3DHALL11_H_
 #define INC_C3DHALL11_H_
 
+#include "stm32l4xx_hal.h"
+
+
 /**
  * @brief 3D Hall 11 register list.
  * @details Specified register list of 3D Hall 11 Click driver.
