@@ -1,0 +1,11 @@
+Debug/*
+Drivers/*
+
+.s*
+.p*
+.m*
+.c*
+
+*.ioc
+*.launch
+*.ld
