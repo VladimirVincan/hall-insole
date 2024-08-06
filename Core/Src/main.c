@@ -24,6 +24,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "c3dhall9.h"
+#include "c3dhall11.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -106,20 +107,207 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  char buf[32];
-  c3dhall9_init(hi2c1, C3DHALL9_I2C_DEFAULT_ADDR);
+  uint8_t buf[32];
+  uint8_t c11_reg = 0xff;
+  // c3dhall9_init(hi2c1, C3DHALL9_I2C_DEFAULT_ADDR);
+  // c3dhall9_init(hi2c1, C3DHALL9_I2C_NEW_ADDR);
+  c3dhall11_init(huart2, hi2c1, C3DHALL11_DEVICE_ADDRESS);
+  HAL_StatusTypeDef read_status = HAL_OK;
   while (1)
   {
-	   c3dhall9_read_data(hi2c1);
-	   sprintf(buf, "x : %.1f\ny : %.1f\nz : %.1f\ntemp : %.1f\n", c3dhall9_get_x(), c3dhall9_get_y(), c3dhall9_get_z(), c3dhall9_get_temp());
+//	   // ---------------- HALL 9 ----------------
+//	   read_status = c3dhall9_read_data(huart2, hi2c1, C3DHALL9_I2C_DEFAULT_ADDR);
+//	   if (read_status == HAL_OK) {
+//		   sprintf(buf, "DEFAULT\nx : %.1f\ny : %.1f\nz : %.1f\ntemp : %.1f\n", c3dhall9_get_x(), c3dhall9_get_y(), c3dhall9_get_z(), c3dhall9_get_temp());
+//		   HAL_UART_Transmit(&huart2, buf, strlen((char*)buf), HAL_MAX_DELAY);
+//		   HAL_Delay(100);
+//	   }
+//
+//	   read_status = c3dhall9_read_data(huart2, hi2c1, C3DHALL9_I2C_NEW_ADDR);
+//	   if (read_status == HAL_OK) {
+//		   sprintf(buf, "NEW\nx : %.1f\ny : %.1f\nz : %.1f\ntemp : %.1f\n", c3dhall9_get_x(), c3dhall9_get_y(), c3dhall9_get_z(), c3dhall9_get_temp());
+//		   HAL_UART_Transmit(&huart2, buf, strlen((char*)buf), HAL_MAX_DELAY);
+//		   HAL_Delay(100);
+//	   }
+
+//	   c3dhall9_write_register(hi2c1, C3DHALL9_I2C_NEW_ADDR, C3DHALL9_REG_EEPROM_02,
+//	   			C3DHALL9_EEPROM_02_ENABLE_X |
+//	   			C3DHALL9_EEPROM_02_ENABLE_Y |
+//	   			C3DHALL9_EEPROM_02_ENABLE_Z |
+//	   			C3DHALL9_EEPROM_02_I2C_THRESHOLD_18V |
+//	   			C3DHALL9_EEPROM_02_DISABLE_SLAVE_ADC |
+//	   			C3DHALL9_EEPROM_02_I2C_ADDR_MIN);
+
+	   // ---------------- !HALL 9 ----------------
+
+
+	   // ---------------- HALL 11 ----------------
+	   sprintf(buf, "\ninit loop\n");
 	   HAL_UART_Transmit(&huart2, buf, strlen((char*)buf), HAL_MAX_DELAY);
+	   HAL_Delay(100);
+
+	   c3dhall11_write_register(huart2, hi2c1, C3DHALL11_DEVICE_ADDRESS, C3DHALL11_REG_SENSOR_CONFIG_1,
+	   			C3DHALL11_MAG_CH_EN_ENABLE_XYZ);
+
+	   c3dhall11_write_register(huart2, hi2c1, 0x35, 0x02, 0xff);
+
+       // read_status = c3dhall11_read_register(huart2, hi2c1, C3DHALL11_DEVICE_ADDRESS, C3DHALL11_REG_SENSOR_CONFIG_1, &c11_reg);
+	   read_status = c3dhall11_read_register(huart2, hi2c1, 0x35, 0x02, &c11_reg);
+	   if (read_status == HAL_OK) {
+		   sprintf(buf, "C3DHALL11_REG_SENSOR_CONFIG_1: %x\n", c11_reg);
+		   HAL_UART_Transmit(&huart2, buf, strlen((char*)buf), HAL_MAX_DELAY);
+		   HAL_Delay(100);
+	   }
+
+	   sprintf(buf, "read status: %x\n", read_status);
+	   HAL_UART_Transmit(&huart2, buf, strlen((char*)buf), HAL_MAX_DELAY);
+	   HAL_Delay(100);
+
+	   read_status = c3dhall11_read_register(huart2, hi2c1, 0x35, 0x03, &c11_reg);
+	   if (read_status == HAL_OK) {
+		   sprintf(buf, "C3DHALL11_REG_SENSOR_CONFIG_2: %x\n", c11_reg);
+		   HAL_UART_Transmit(&huart2, buf, strlen((char*)buf), HAL_MAX_DELAY);
+		   HAL_Delay(100);
+	   }
+
+	   sprintf(buf, "read status: %x\n", read_status);
+	   HAL_UART_Transmit(&huart2, buf, strlen((char*)buf), HAL_MAX_DELAY);
+	   HAL_Delay(100);
+
+
+	   read_status = c3dhall11_read_data(huart2, hi2c1, C3DHALL11_DEVICE_ADDRESS);
+	   if (read_status == HAL_OK) {
+		   sprintf(buf, "sensor config 1 (0x70): %x\n", c3dhall11_get_sensor_config_1());
+		   HAL_UART_Transmit(&huart2, buf, strlen((char*)buf), HAL_MAX_DELAY);
+		   HAL_Delay(100);
+
+		   sprintf(buf, "x : %.1f\ny : %.1f\nz : %.1f\ntemp : %.1f\n", c3dhall11_get_x(), c3dhall11_get_y(), c3dhall11_get_z(), c3dhall11_get_temp());
+		   HAL_UART_Transmit(&huart2, buf, strlen((char*)buf), HAL_MAX_DELAY);
+		   HAL_Delay(100);
+
+		   sprintf(buf, "x msb: %x\n", c3dhall11_get_data(2));
+		   HAL_UART_Transmit(&huart2, buf, strlen((char*)buf), HAL_MAX_DELAY);
+		   HAL_Delay(100);
+
+		   sprintf(buf, "x lsb: %x\n", c3dhall11_get_data(3));
+		   HAL_UART_Transmit(&huart2, buf, strlen((char*)buf), HAL_MAX_DELAY);
+		   HAL_Delay(100);
+	   }
+
+	   sprintf(buf, "read status: %x\n", read_status);
+	   HAL_UART_Transmit(&huart2, buf, strlen((char*)buf), HAL_MAX_DELAY);
+	   HAL_Delay(100);
+
+
+	   uint8_t i2c_addr;
+	   read_status = c3dhall11_read_register(huart2, hi2c1, C3DHALL11_I2C_DEFAULT_ADDR, C3DHALL11_REG_I2C_ADDRESS, &i2c_addr);
+	   if (read_status == HAL_OK) {
+		   sprintf(buf, "i2c: %x\n", i2c_addr);
+		   HAL_UART_Transmit(&huart2, buf, strlen((char*)buf), HAL_MAX_DELAY);
+		   HAL_Delay(100);
+	   }
+
+	   sprintf(buf, "read status: %x\n", read_status);
+	   HAL_UART_Transmit(&huart2, buf, strlen((char*)buf), HAL_MAX_DELAY);
+	   HAL_Delay(100);
+
+	   read_status = c3dhall11_read_register(huart2, hi2c1, C3DHALL11_I2C_DEFAULT_ADDR, C3DHALL11_REG_MANUFACTURER_ID_LSB, &c11_reg);
+	   if (read_status == HAL_OK) {
+		   sprintf(buf, "manufacturer_id lsb: %x\n", c11_reg);
+		   HAL_UART_Transmit(&huart2, buf, strlen((char*)buf), HAL_MAX_DELAY);
+		   HAL_Delay(100);
+	   }
+
+	   sprintf(buf, "read status: %x\n", read_status);
+	   HAL_UART_Transmit(&huart2, buf, strlen((char*)buf), HAL_MAX_DELAY);
+	   HAL_Delay(100);
+
+	   read_status = c3dhall11_read_register(huart2, hi2c1, C3DHALL11_I2C_DEFAULT_ADDR, C3DHALL11_REG_MANUFACTURER_ID_MSB, &c11_reg);
+	   if (read_status == HAL_OK) {
+		   sprintf(buf, "manufacturer_id msb: %x\n", c11_reg);
+		   HAL_UART_Transmit(&huart2, buf, strlen((char*)buf), HAL_MAX_DELAY);
+		   HAL_Delay(100);
+	   }
+
+	   sprintf(buf, "read status: %x\n", read_status);
+	   HAL_UART_Transmit(&huart2, buf, strlen((char*)buf), HAL_MAX_DELAY);
+	   HAL_Delay(100);
+	   // ---------------- !HALL 11 ----------------
+
+
+	   // ----------------------------------
+
+//	   c3dhall11_read_register(hi2c1, C3DHALL11_I2C_DEFAULT_ADDR, C3DHALL11_REG_I2C_ADDRESS, C3DHALL11_DATA_BUF);
+//	   sprintf(buf, "%x_\r\n", C3DHALL11_DATA_BUF[0]);
+//	   HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
+//	   HAL_Delay(1000);
+//
+//	   c3dhall11_read_register(hi2c1, C3DHALL11_I2C_DEFAULT_ADDR, C3DHALL11_REG_Z_MSB_RESULT, C3DHALL11_DATA_BUF);
+//	   sprintf(buf, "%x_\r\n", C3DHALL11_DATA_BUF[0]);
+//	   HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
+//	   HAL_Delay(1000);
+//
+//	   c3dhall11_read_register(hi2c1, C3DHALL11_I2C_DEFAULT_ADDR, C3DHALL11_REG_Z_LSB_RESULT, C3DHALL11_DATA_BUF);
+//	   sprintf(buf, "%x_\r\n", C3DHALL11_DATA_BUF[0]);
+//	   HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
+//	   HAL_Delay(1000);
+
+	  /*sprintf(buf, "\n\n=== START ===\r", C3DHALL11_DATA_BUF);
+	   HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
 	   HAL_Delay(1000);
 
-	   /*c3dhall9_read_register(hi2c1, C3DHALL9_I2C_DEFAULT_ADDR, C3DHALL9_REG_EEPROM_02, &C3DHALL9_REGISTER_TEST);
-	   sprintf(buf, "%x_\r\n", C3DHALL9_REGISTER_TEST);
+	   c3dhall11_read_register(hi2c1, C3DHALL11_I2C_DEFAULT_ADDR, C3DHALL11_REG_I2C_ADDRESS, C3DHALL11_DATA_BUF);
+	   sprintf(buf, "%x_\r\n", C3DHALL11_DATA_BUF[0]);
+	   HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
+	   HAL_Delay(1000);
+
+	   c3dhall11_read_register(hi2c1, C3DHALL11_I2C_DEFAULT_ADDR, C3DHALL11_REG_DEVICE_ID, C3DHALL11_DATA_BUF);
+	   sprintf(buf, "%x_\r\n", C3DHALL11_DATA_BUF[0]);
+	   HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
+	   HAL_Delay(1000);
+
+	   c3dhall11_read_register(hi2c1, C3DHALL11_I2C_DEFAULT_ADDR, C3DHALL11_REG_MANUFACTURER_ID_LSB, C3DHALL11_DATA_BUF);
+	   sprintf(buf, "%x_\r\n", C3DHALL11_DATA_BUF[0]);
+	   HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
+	   HAL_Delay(1000);
+
+	   c3dhall11_read_register(hi2c1, C3DHALL11_I2C_DEFAULT_ADDR, C3DHALL11_REG_MANUFACTURER_ID_MSB, C3DHALL11_DATA_BUF);
+	   sprintf(buf, "%x_\r\n", C3DHALL11_DATA_BUF[0]);
 	   HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
 	   HAL_Delay(1000);*/
 
+//	   c3dhall9_read_register(hi2c1, C3DHALL9_I2C_DEFAULT_ADDR, C3DHALL9_REG_EEPROM_02, &C3DHALL9_REGISTER_TEST);
+//	   sprintf(buf, "DEFAULT REG 02: %x_\r\n", C3DHALL9_REGISTER_TEST);
+//	   HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
+//	   HAL_Delay(1000);
+//
+//	   c3dhall9_read_register(hi2c1, C3DHALL9_I2C_NEW_ADDR, C3DHALL9_REG_EEPROM_02, &C3DHALL9_REGISTER_TEST);
+//	   sprintf(buf, "NEW REG 02: %x_\r\n", C3DHALL9_REGISTER_TEST);
+//	   HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
+//	   HAL_Delay(1000);
+//
+//	   c3dhall9_read_register(hi2c1, C3DHALL9_I2C_NEW_ADDR, C3DHALL9_REG_EEPROM_02, &C3DHALL9_REGISTER_TEST);
+//	   sprintf(buf, "NEW REG 02: %x_\r\n", C3DHALL9_REGISTER_TEST);
+//	   HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
+//	   HAL_Delay(1000);
+//
+//	   uint8_t slave_addr = 0x00;
+//	   slave_addr = (uint8_t)((C3DHALL9_REGISTER_TEST & 0xfc00) >> 10);
+//	   sprintf(buf, "slave addr: %x_\r\n", slave_addr);
+//	   HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
+//	   HAL_Delay(100);
+//
+//	   uint8_t disable_slave_adc = 0x00;
+//	   disable_slave_adc = (uint8_t)((C3DHALL9_REGISTER_TEST & 0x20000) >> 17);
+//	   sprintf(buf, "disable_slave_adc: %x_\r\n", disable_slave_adc);
+//	   HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
+//	   HAL_Delay(100);
+
+//	   c3dhall9_read_register(hi2c1, huart2, C3DHALL9_I2C_NEW_ADDR, C3DHALL9_REG_EEPROM_02, &C3DHALL9_REGISTER_TEST);
+//	   c3dhall9_debug_read_register(hi2c1, C3DHALL9_I2C_NEW_ADDR, C3DHALL9_REG_EEPROM_02, &C3DHALL9_REGISTER_TEST);
+//	   sprintf(buf, "NEW REG 02: %x_\r\n", C3DHALL9_REGISTER_TEST);
+//	   HAL_UART_Transmit(&huart2, buf, strlen(buf), HAL_MAX_DELAY);
+//	   HAL_Delay(1000);
 
     /* USER CODE END WHILE */
 

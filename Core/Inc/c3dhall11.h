@@ -223,4 +223,29 @@
  */
 #define C3DHALL11_DEVICE_ADDRESS                    0x35
 
+/*
+ * @brief Personal definitions
+ * */
+#define C3DHALL11_I2C_DEFAULT_ADDR 0x35
+#define C3DHALL11_I2C_DEFAULT_RD_ADDR 0x6A
+#define C3DHALL11_I2C_DEFAULT_WR_ADDR 0x6B
+
+extern uint8_t C3DHALL11_DATA_BUF[12];
+extern uint8_t C3DHALL11_SENSOR_CONFIG[2];
+extern uint8_t C3DHALL11_TEMP_CONFIG;
+
+HAL_StatusTypeDef c3dhall11_generic_read(UART_HandleTypeDef huart2, I2C_HandleTypeDef hi2c1, const uint8_t i2c_addr, const uint8_t reg_addr, uint8_t *reg, const int len);
+HAL_StatusTypeDef c3dhall11_generic_write(UART_HandleTypeDef huart2, I2C_HandleTypeDef hi2c1, const uint8_t i2c_addr, const uint8_t reg_addr, uint8_t *reg, const int len);
+HAL_StatusTypeDef c3dhall11_read_register(UART_HandleTypeDef huart2, I2C_HandleTypeDef hi2c1, const uint8_t i2c_addr, const uint8_t reg_addr, uint8_t *reg);
+HAL_StatusTypeDef c3dhall11_write_register(UART_HandleTypeDef huart2, I2C_HandleTypeDef hi2c1, const uint8_t i2c_addr, const uint8_t reg_addr, uint8_t reg);
+HAL_StatusTypeDef c3dhall11_init(UART_HandleTypeDef huart2, I2C_HandleTypeDef hi2c1, const uint8_t i2c_addr);
+HAL_StatusTypeDef c3dhall11_read_data(UART_HandleTypeDef huart2, I2C_HandleTypeDef hi2c1, const uint8_t i2c_addr);
+float c3dhall11_get_x();
+float c3dhall11_get_y();
+float c3dhall11_get_z();
+float c3dhall11_get_temp();
+
+
+
+
 #endif /* INC_C3DHALL11_H_ */

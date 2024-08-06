@@ -41,7 +41,8 @@
 #define C3DHALL9_VOLATILE_27_I2C_FULL_LOOP      0x00000008ul
 #define C3DHALL9_REG_CUSTOMER_ACCESS_CODE       0x2C413534ul
 
-#define C3DHALL9_EEPROM_02_I2C_ADDR_MIN         0x00000400ul
+#define C3DHALL9_EEPROM_02_I2C_ADDR_MIN         0x00000000ul
+#define C3DHALL9_EEPROM_02_I2C_ADDR_FIRST       0x00000400ul
 #define C3DHALL9_EEPROM_02_I2C_ADDR_MAX         0x0001FC00ul
 
 /**
@@ -71,6 +72,7 @@
 #define C3DHALL9_I2C_DEFAULT_ADDR 0x60
 #define C3DHALL9_I2C_DEFAULT_RD_ADDR 0xc1
 #define C3DHALL9_I2C_DEFAULT_WR_ADDR 0xc0
+#define C3DHALL9_I2C_NEW_ADDR 0x00
 
 #define C3DHALL9_REGISTER_MSB_ADDR C3DHALL9_REG_VOLATILE_28
 #define C3DHALL9_REGISTER_LSB_ADDR C3DHALL9_REG_VOLATILE_29
@@ -80,9 +82,9 @@ extern uint32_t C3DHALL9_REGISTER_MSB;
 extern uint32_t C3DHALL9_REGISTER_LSB;
 extern uint32_t C3DHALL9_REGISTER_TEST;
 
-void c3dhall9_read_register(I2C_HandleTypeDef hi2c1, const uint8_t i2c_addr, const uint8_t reg_addr, uint32_t *reg);
+HAL_StatusTypeDef  c3dhall9_read_register(UART_HandleTypeDef huart2, I2C_HandleTypeDef hi2c1, const uint8_t i2c_addr, const uint8_t reg_addr, uint32_t *reg);
 void c3dhall9_write_register(I2C_HandleTypeDef hi2c1, const uint8_t i2c_addr, const uint8_t reg_addr, const uint32_t reg);
-void c3dhall9_read_data(I2C_HandleTypeDef hi2c1);
+HAL_StatusTypeDef  c3dhall9_read_data(UART_HandleTypeDef huart2, I2C_HandleTypeDef hi2c1, const uint8_t i2c_addr);
 void c3dhall9_init(I2C_HandleTypeDef hi2c1, const uint8_t i2c_addr);
 float c3dhall9_get_x();
 float c3dhall9_get_y();

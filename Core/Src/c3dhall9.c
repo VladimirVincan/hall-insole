@@ -10,7 +10,7 @@ uint32_t C3DHALL9_REGISTER_MSB = 0x00;
 uint32_t C3DHALL9_REGISTER_LSB = 0x00;
 uint32_t C3DHALL9_REGISTER_TEST = 0x00;
 
-void c3dhall9_read_register(I2C_HandleTypeDef hi2c1, const uint8_t i2c_addr, const uint8_t reg_addr, uint32_t *reg)
+HAL_StatusTypeDef  c3dhall9_read_register(UART_HandleTypeDef huart2, I2C_HandleTypeDef hi2c1, const uint8_t i2c_addr, const uint8_t reg_addr, uint32_t *reg)
 {
 	uint8_t buf[4];
 	uint8_t transmit[32];
@@ -23,15 +23,70 @@ void c3dhall9_read_register(I2C_HandleTypeDef hi2c1, const uint8_t i2c_addr, con
 	ret = HAL_I2C_Master_Transmit(&hi2c1, i2c_wr_addr, buf, 1, HAL_MAX_DELAY);
 	HAL_Delay(100);
 	if (ret != HAL_OK) {
-		// strcpy((char*)transmit, "TxEr\r\n");
-		// HAL_UART_Transmit(&huart2, transmit, strlen((char*)transmit), HAL_MAX_DELAY);
+		buf[0] = 0xff;
+		buf[1] = 0xff;
+		buf[2] = 0xff;
+		buf[3] = 0xff;
+
+		strcpy((char*)transmit, "TxEr\r\n");
+		HAL_UART_Transmit(&huart2, transmit, strlen((char*)transmit), HAL_MAX_DELAY);
+		return ret;
 	}
 	else {
 		ret = HAL_I2C_Master_Receive(&hi2c1, i2c_rd_addr, buf, 4, HAL_MAX_DELAY);
 		HAL_Delay(100);
 		if (ret != HAL_OK) {
-			// strcpy((char*)transmit, "RxEr\r\n");
-			// HAL_UART_Transmit(&huart2, transmit, strlen((char*)transmit), HAL_MAX_DELAY);
+			buf[0] = 0xff;
+			buf[1] = 0xff;
+			buf[2] = 0xff;
+			buf[3] = 0xff;
+
+			strcpy((char*)transmit, "RxEr\r\n");
+			HAL_UART_Transmit(&huart2, transmit, strlen((char*)transmit), HAL_MAX_DELAY);
+			return ret;
+		}
+	}
+
+	(*reg) = buf[0];
+	(*reg) <<= 8;
+	(*reg) |= buf[1];
+	(*reg) <<= 8;
+	(*reg) |= buf[2];
+	(*reg) <<= 8;
+	(*reg) |= buf[3];
+	return ret;
+}
+
+HAL_StatusTypeDef c3dhall9_debug_read_register(I2C_HandleTypeDef hi2c1, UART_HandleTypeDef huart2, const uint8_t i2c_addr, const uint8_t reg_addr, uint32_t *reg)
+{
+	uint8_t buf[4];
+	uint8_t transmit[32];
+	HAL_StatusTypeDef ret;
+
+	const uint8_t i2c_rd_addr = (i2c_addr << 1) | 0x1;
+	const uint8_t i2c_wr_addr = (i2c_addr << 1) | 0x0;
+
+	buf[0] = reg_addr;
+	ret = HAL_I2C_Master_Transmit(&hi2c1, i2c_wr_addr, buf, 1, HAL_MAX_DELAY);
+	HAL_Delay(100);
+	if (ret != HAL_OK) {
+		buf[0] = 0xff;
+		buf[1] = 0xff;
+		buf[2] = 0xff;
+		buf[3] = 0xff;
+		strcpy((char*)transmit, "TxEr\r\n");
+		HAL_UART_Transmit(&huart2, transmit, strlen((char*)transmit), HAL_MAX_DELAY);
+	}
+	else {
+		ret = HAL_I2C_Master_Receive(&hi2c1, i2c_rd_addr, buf, 4, HAL_MAX_DELAY);
+		HAL_Delay(100);
+		if (ret != HAL_OK) {
+			buf[0] = 0xff;
+			buf[1] = 0xff;
+			buf[2] = 0xff;
+			buf[3] = 0xff;
+			strcpy((char*)transmit, "RxEr\r\n");
+			HAL_UART_Transmit(&huart2, transmit, strlen((char*)transmit), HAL_MAX_DELAY);
 		}
 	}
 
@@ -64,10 +119,10 @@ void c3dhall9_write_register(I2C_HandleTypeDef hi2c1, const uint8_t i2c_addr, co
 	}
 }
 
-void c3dhall9_read_data(I2C_HandleTypeDef hi2c1)
+HAL_StatusTypeDef c3dhall9_read_data(UART_HandleTypeDef huart2, I2C_HandleTypeDef hi2c1, const uint8_t i2c_addr)
 {
-	c3dhall9_read_register(hi2c1, C3DHALL9_I2C_DEFAULT_ADDR, C3DHALL9_REGISTER_MSB_ADDR, &C3DHALL9_REGISTER_MSB);
-    c3dhall9_read_register(hi2c1, C3DHALL9_I2C_DEFAULT_ADDR, C3DHALL9_REGISTER_LSB_ADDR, &C3DHALL9_REGISTER_LSB);
+	c3dhall9_read_register(huart2, hi2c1, i2c_addr, C3DHALL9_REGISTER_MSB_ADDR, &C3DHALL9_REGISTER_MSB);
+    c3dhall9_read_register(huart2, hi2c1, i2c_addr, C3DHALL9_REGISTER_LSB_ADDR, &C3DHALL9_REGISTER_LSB);
 }
 
 void c3dhall9_init(I2C_HandleTypeDef hi2c1, const uint8_t i2c_addr)
