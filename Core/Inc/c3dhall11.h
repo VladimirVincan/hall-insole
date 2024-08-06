@@ -222,7 +222,7 @@
  * 3D Hall 11 Click driver.
  */
 #define C3DHALL11_DEVICE_ADDRESS                    0x35
-
+#define C3DHALL11_CUSTOM_ADDRESS                    0x01
 /*
  * @brief Personal definitions
  * */
