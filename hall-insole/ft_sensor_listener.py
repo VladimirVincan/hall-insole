@@ -6,7 +6,7 @@ import sys
 import os
 
 class ForceTorqueLogger(Node):
-    def __init__(self, filename):
+    def __init__(self, filename, duration_s=10):
         super().__init__('force_torque_logger')
         self.filename = filename
 
@@ -23,15 +23,22 @@ class ForceTorqueLogger(Node):
         self.writer.writerow(['force_x', 'force_y', 'force_z', 'torque_x', 'torque_y', 'torque_z'])
 
         self.get_logger().info(f"Logging to {self.filename}")
+        self.create_timer(duration_s, self.stop_logging)
 
     def listener_callback(self, msg):
         force = msg.wrench.force
         torque = msg.wrench.torque
+        print(force)
         self.writer.writerow([force.x, force.y, force.z, torque.x, torque.y, torque.z])
 
     def destroy_node(self):
         self.csvfile.close()
         super().destroy_node()
+
+    def stop_logging(self):
+        self.get_logger().info("Finished logging. Shutting down.")
+        self.csvfile.close()
+        rclpy.shutdown()
 
 
 def main(args=None):
