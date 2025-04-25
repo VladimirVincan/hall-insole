@@ -5,9 +5,10 @@ import re
 import os
 import sys
 
-# --- Podesi ovde samo baudrate ---
+# --- Podesi ovde samo baudrate i trajanje snimanja ---
 BAUDRATE = 115200
-# ----------------------------------
+MEASUREMENT_DURATION_SECONDS = 10
+# ------------------------------------------------------
 
 def main():
     # Provera da li je COM port prosleđen kao argument
@@ -16,29 +17,34 @@ def main():
         print("python log_serial_xyz.py COM3")
         sys.exit(1)
 
-    port = sys.argv[1]  # Uzimamo COM port iz argumenta
+    port = sys.argv[1]
     csv_user_filename = input("Unesi ime za CSV fajl (bez ekstenzije, npr. 'merenja_xyz'): ").strip()
 
     # Odredi putanju za 'data' folder jedan nivo iznad skripte
     root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     data_dir = os.path.join(root_dir, 'data')
-    os.makedirs(data_dir, exist_ok=True)  # Ako ne postoji, kreiraj 'data'
+    os.makedirs(data_dir, exist_ok=True)
 
-    # Formiraj punu putanju do CSV fajla
     csv_filename = os.path.join(data_dir, f'{csv_user_filename}.csv')
 
     try:
         ser = serial.Serial(port, BAUDRATE, timeout=1)
         print(f"Povezano na {port} @ {BAUDRATE} baud.")
         print(f"Snimanje podataka u fajl: {csv_filename}")
+        print(f"Skripta ce se automatski zaustaviti nakon {MEASUREMENT_DURATION_SECONDS} sekundi...")
+
+        start_time = time.time()
 
         with open(csv_filename, mode='w', newline='') as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(['timestamp', 'x', 'y', 'z'])
 
-            print("Pocetak snimanja podataka... (prekini sa Ctrl+C)")
-
             while True:
+                # Provera da li je prošlo 10 sekundi
+                if time.time() - start_time > MEASUREMENT_DURATION_SECONDS:
+                    print(f"Isteklo {MEASUREMENT_DURATION_SECONDS} sekundi. Zavrsavam snimanje...")
+                    break
+
                 line = ser.readline().decode('utf-8').strip()
 
                 if 'x :' in line:
