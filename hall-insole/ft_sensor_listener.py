@@ -34,7 +34,7 @@ class ForceTorqueLogger(Node):
     def listener_callback(self, msg):
         force = msg.wrench.force
         torque = msg.wrench.torque
-        print(force)
+        print(force.z)
         timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
         self.writer.writerow([timestamp, force.x, force.y, force.z, torque.x, torque.y, torque.z])
 
@@ -79,7 +79,8 @@ def serial_logger_thread(port, serial_filename, duration_sec=10):
                     timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
                     writer.writerow([timestamp, x, y, z])
                     csvfile.flush()
-                    print(f"{timestamp} -> x: {x}, y: {y}, z: {z}")
+                    # print(f"{timestamp} -> x: {x}, y: {y}, z: {z}")
+                    print(f"{timestamp} -> z: {z}")
             except Exception as e:
                 print(f"Greška u očitavanju serijskih podataka: {e}")
                 continue
